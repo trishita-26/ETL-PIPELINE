@@ -1,49 +1,160 @@
-### Project Overview: Airflow ETL Pipeline with Postgres and API Integration
 
-This project involves creating an ETL (Extract, Transform, Load) pipeline using Apache Airflow. The pipeline extracts data
-rom an external API (in this case, NASA's Astronomy Picture of the Day (APOD) API), transforms the data, and loads it into a
-ostgres database. The entire workflow is orchestrated by Airflow, a platform that allows scheduling, monitoring, and
-nanaging workflows.
+---
 
-he project leverages Docker to run Airflow and Postgres as services, ensuring an isolated and reproducible environment.
-Ne also utilize Airflow hooks and operators to handle the ETL process efficiently.
+# 🚀 NASA APOD ETL Pipeline (Airflow + Postgres)
 
-Key Components of the Project: Airflow for Orchestration:
+This project is a fully automated **ETL data pipeline** built using **Apache Airflow 2.9+**, **PostgreSQL**, and the public **NASA Astronomy Picture of the Day (APOD) API**.
 
-Airflow is used to define, schedule, and monitor the entire ETL pipeline. It manages task dependencies, ensuring that the
-rocess runs sequentially and reliably. The Airflow DAG (Directed Acyclic Graph) defines the workflow, which includes tasks
-ike data extraction, transformation, and loading. Postgres Database:
+The pipeline fetches NASA’s daily image metadata, processes it, and stores it in a Postgres database for analytics and downstream use.
 
-A PostgreSQL database is used to store the extracted and transformed data. Postgres is hosted in a Docker container,
-making it easy to manage and ensuring data persistence through Docker volumes. We interact with Postgres using Airflow's
-PostgresHook and PostgresOperator. NASA API (Astronomy Picture of the Day):
+---
 
-The external API used in this project is NASA's APOD API, which provides data about the astronomy picture of the day,
-including metadata like the title, explanation, and the URL of the image. We use Airflow's SimpleHttpOperator to extract
-data from the API. 
+## 📌 **Project Overview**
 
-Objectives of the Project: 
-Extract Data: The pipeline extracts astronomy-related data from NASA's APOD API on a scheduled basis (daily, in this case). 
+The goal of this pipeline is simple:
 
-Transform Data: Transformations such as filtering or processing the API response are performed to ensure that the data is in a suitable
-format before being inserted into the database. Load Data into Postgres:
+1. **Extract**
+   Fetch latest APOD data using NASA API.
 
-Transformations such as filtering or processing the API response are performed to ensure that
-the data is in a suitable format before being inserted into the database. Load Data into Postgres:
+2. **Transform**
+   Parse JSON response and clean required fields.
 
-The transformed data is loaded into a Postgres database. The data can be used for further
-analysis, reporting, or visualization. Architecture and Workflow: The ETL pipeline is orchestrated
-in Airflow using a DAG (Directed Acyclic Graph). The pipeline consists of the following stages:
+3. **Load**
+   Store final dataset into a PostgreSQL table.
 
-1. Extract (E): The SimpleHttpOperator is used to make HTTP GET requests to NASA's APOD
-API. The response is in JSON format, containing fields like the title of the picture, the
-explanation, and the URL to the image.
-2. Transform (T): The extracted JSON data is processed in the transform task using Airflow's
-TaskFlow API (with the @task decorator). This stage involves extracting relevant fields like
-title, explanation, url, and date and ensuring they are in the correct format for the
-database.
-3. Load (L): The transformed data is loaded into a Postgres table using PostgresHook. If the
-target table doesn't exist in the Postgres database, it is created automatically as part of
-the DAG using a create table task.
+The pipeline runs **every day** using Airflow’s modern scheduling system (`schedule="@daily"`).
 
-ûdemy
+---
+
+## 🏗 **Tech Stack**
+
+* **Apache Airflow 2.9+**
+* **PostgreSQL**
+* **Docker / Docker Compose**
+* **Airflow Providers**
+
+  * `apache-airflow-providers-http`
+  * `apache-airflow-providers-postgres`
+* **Python 3.12**
+* **Requests library**
+
+---
+
+## 📂 **Project Structure**
+
+```
+.
+├── dags/
+│   └── etl.py
+├── docker-compose.yml
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## ⚙️ **Airflow DAG Summary**
+
+### **DAG ID:** `nasa_apod_postgres`
+
+### **Schedule:** Daily (`@daily`)
+
+### **Catchup:** Disabled
+
+### **Tasks:**
+
+| Task               | Description                       |
+| ------------------ | --------------------------------- |
+| **extract_apod**   | Calls NASA API (HTTP GET)         |
+| **transform_apod** | Cleans and prepares JSON fields   |
+| **load_apod**      | Inserts cleaned row into Postgres |
+
+---
+
+## 🔌 **Environment Variables Required**
+
+Add these in `.env` or Airflow UI → Variables:
+
+```
+NASA_API_KEY=your_api_key_here
+POSTGRES_CONN_ID=postgres_default
+```
+
+---
+
+## 📦 **Installation & Setup**
+
+### 1️⃣ Clone repository
+
+```bash
+git clone https://github.com/your-username/nasa-apod-airflow.git
+cd nasa-apod-airflow
+```
+
+### 2️⃣ Install dependencies
+
+```
+pip install -r requirements.txt
+```
+
+### 3️⃣ Start Airflow (Docker)
+
+```bash
+docker compose up -d
+```
+
+### 4️⃣ Access Airflow UI
+
+Go to:
+**[http://localhost:8080](http://localhost:8080)**
+
+Enable the DAG → watch the ETL pipeline run.
+
+---
+
+## 🗄 **PostgreSQL Table Schema**
+
+```
+CREATE TABLE nasa_apod (
+    date DATE PRIMARY KEY,
+    title TEXT,
+    explanation TEXT,
+    media_type TEXT,
+    url TEXT
+);
+```
+
+---
+
+## 📊 Output Example
+
+| date       | title       | media_type | url                                                 |
+| ---------- | ----------- | ---------- | --------------------------------------------------- |
+| 2025-01-02 | Galaxy View | image      | [https://apod.nasa.gov/](https://apod.nasa.gov/)... |
+
+---
+
+## 🎯 **Why This Project Is Valuable**
+
+✔ Real ETL workflow
+✔ Scheduling + automation
+✔ API → Airflow → Postgres pipeline
+✔ Industry-standard stack
+✔ Recruiter-friendly, perfect for Data Engineer intern roles
+
+---
+
+## 🤝 **Contributions**
+
+Feel free to fork this project and improve the transformations, add logging, or build Dash/Streamlit dashboards on top of the dataset.
+
+---
+
+## 📜 License
+
+MIT License
+
+---
+
+
+Just tell me and I’ll add it!
